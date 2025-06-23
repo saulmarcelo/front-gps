@@ -17,6 +17,50 @@ const isOnline = ref(true)
 const syncStatus = ref('synced') // 'synced', 'syncing', 'pending'
 const showHelp = ref(false)
 
+// Estados para formularios
+const showAddSchoolForm = ref(false)
+const showAddTeacherForm = ref(false)
+const showAttendanceForm = ref(false)
+const showActivityForm = ref(false)
+const showReportForm = ref(false)
+
+// Formularios reactivos
+const newSchool = ref({
+  name: '',
+  location: '',
+  address: '',
+  director: '',
+  phone: '',
+  email: '',
+  founded: ''
+})
+
+const newTeacher = ref({
+  name: '',
+  rut: '',
+  school: '',
+  subjects: [],
+  courses: [],
+  phone: '',
+  email: '',
+  experience: ''
+})
+
+const newActivity = ref({
+  title: '',
+  subject: '',
+  description: '',
+  dueDate: '',
+  course: ''
+})
+
+const attendanceForm = ref({
+  school: '',
+  course: '',
+  date: new Date().toISOString().split('T')[0],
+  students: []
+})
+
 const menuItems = [
   { id: 'dashboard', name: 'Panel Principal', icon: Home, description: 'Vista general del sistema' },
   { id: 'schools', name: 'Escuelas y Docentes', icon: School, description: 'Registro de instituciones' },
@@ -287,13 +331,55 @@ const selectedSchool = ref(null)
 const selectedTeacher = ref(null)
 const selectedReport = ref('')
 const reportPeriod = ref('monthly')
-const newActivity = ref({
-  title: '',
-  subject: '',
-  description: '',
-  dueDate: '',
-  course: ''
-})
+
+// Funciones para manejar formularios
+const handleAddSchool = () => {
+  console.log('Adding school:', newSchool.value)
+  // Aquí iría la lógica para agregar la escuela
+  showAddSchoolForm.value = false
+  // Reset form
+  newSchool.value = {
+    name: '',
+    location: '',
+    address: '',
+    director: '',
+    phone: '',
+    email: '',
+    founded: ''
+  }
+}
+
+const handleAddTeacher = () => {
+  console.log('Adding teacher:', newTeacher.value)
+  showAddTeacherForm.value = false
+  newTeacher.value = {
+    name: '',
+    rut: '',
+    school: '',
+    subjects: [],
+    courses: [],
+    phone: '',
+    email: '',
+    experience: ''
+  }
+}
+
+const handleAddActivity = () => {
+  console.log('Adding activity:', newActivity.value)
+  showActivityForm.value = false
+  newActivity.value = {
+    title: '',
+    subject: '',
+    description: '',
+    dueDate: '',
+    course: ''
+  }
+}
+
+const handleTakeAttendance = () => {
+  console.log('Taking attendance:', attendanceForm.value)
+  showAttendanceForm.value = false
+}
 
 const attendanceData = [
   { school: 'Escuela Rural Los Aromos', date: '2024-01-16', present: 42, absent: 3, percentage: 93.3 },
@@ -615,22 +701,21 @@ const familyStudents = [
             </div>
           </div>
         </div>
-
-        <!-- Escuelas y Docentes completo -->
-        <div v-else-if="currentView === 'schools'" class="space-y-8">
+<!-- Escuelas y Docentes completo -->
+        <div v-else-if="currentView === 'schools'" class="space-y-8 animate-slide-in-from-right">
           <!-- Resumen de escuelas -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6">
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 animate-slide-in-from-top" style="animation-delay: 0.1s">
               <h3 class="font-semibold text-blue-800 mb-2">Total Escuelas</h3>
               <div class="text-3xl font-bold text-blue-700">{{ stats.schools }}</div>
               <p class="text-sm text-blue-600">{{ stats.offlineSchools }} offline</p>
             </div>
-            <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-6">
+            <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-6 animate-slide-in-from-top" style="animation-delay: 0.2s">
               <h3 class="font-semibold text-green-800 mb-2">Total Docentes</h3>
               <div class="text-3xl font-bold text-green-700">{{ stats.teachers }}</div>
               <p class="text-sm text-green-600">Activos en el sistema</p>
             </div>
-            <div class="bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl p-6">
+            <div class="bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl p-6 animate-slide-in-from-top" style="animation-delay: 0.3s">
               <h3 class="font-semibold text-orange-800 mb-2">Promedio Estudiantes</h3>
               <div class="text-3xl font-bold text-orange-700">{{ Math.round(stats.students / stats.schools) }}</div>
               <p class="text-sm text-orange-600">Por escuela</p>
@@ -638,7 +723,7 @@ const familyStudents = [
           </div>
 
           <!-- Gestión de Escuelas -->
-          <div class="backdrop-blur-xl bg-white/90 border border-blue-100 rounded-2xl overflow-hidden shadow-xl">
+          <div class="backdrop-blur-xl bg-white/90 border border-blue-100 rounded-2xl overflow-hidden shadow-xl animate-slide-in-from-left" style="animation-delay: 0.4s">
             <div class="p-6 border-b border-blue-200/50 bg-gradient-to-r from-white/10 to-transparent flex justify-between items-center">
               <div>
                 <h2 class="text-xl font-bold text-gray-800 flex items-center gap-3">
@@ -649,7 +734,9 @@ const familyStudents = [
                 </h2>
                 <p class="text-gray-600 text-sm mt-1">Información completa de instituciones educativas</p>
               </div>
-              <button class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2">
+              <button 
+                @click="showAddSchoolForm = true"
+                class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2">
                 <Plus class="w-4 h-4" />
                 Nueva Escuela
               </button>
@@ -657,8 +744,9 @@ const familyStudents = [
             
             <div class="p-6">
               <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                <div v-for="school in schools" :key="school.id" 
-                     class="border border-blue-100 rounded-2xl p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                <div v-for="(school, index) in schools" :key="school.id" 
+                     class="border border-blue-100 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:scale-105 animate-slide-in-from-bottom"
+                     :style="`animation-delay: ${0.5 + index * 0.1}s`"
                      @click="selectedSchool = school">
                   <!-- Header de la escuela -->
                   <div class="flex items-start justify-between mb-4">
@@ -667,7 +755,7 @@ const familyStudents = [
                         <School class="w-6 h-6 text-white" />
                       </div>
                       <div class="w-3 h-3 rounded-full"
-                           :class="school.status === 'Activa' ? 'bg-green-500' : 'bg-red-500'"></div>
+                           :class="school.status === 'Activa' ? 'bg-green-500 animate-pulse' : 'bg-red-500'"></div>
                     </div>
                     <span class="text-xs px-2 py-1 rounded-full"
                           :class="school.connectivity === 'Baja' 
@@ -716,8 +804,8 @@ const familyStudents = [
             </div>
           </div>
 
-          <!-- Gestión de Docentes -->
-          <div class="backdrop-blur-xl bg-white/90 border border-blue-100 rounded-2xl overflow-hidden shadow-xl">
+<!-- Gestión de Docentes -->
+          <div class="backdrop-blur-xl bg-white/90 border border-blue-100 rounded-2xl overflow-hidden shadow-xl animate-slide-in-from-right" style="animation-delay: 0.6s">
             <div class="p-6 border-b border-blue-200/50 bg-gradient-to-r from-white/10 to-transparent flex justify-between items-center">
               <div>
                 <h2 class="text-xl font-bold text-gray-800 flex items-center gap-3">
@@ -728,7 +816,9 @@ const familyStudents = [
                 </h2>
                 <p class="text-gray-600 text-sm mt-1">Información y asignaciones de profesores</p>
               </div>
-              <button class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2">
+              <button 
+                @click="showAddTeacherForm = true"
+                class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2">
                 <Plus class="w-4 h-4" />
                 Nuevo Docente
               </button>
@@ -748,7 +838,9 @@ const familyStudents = [
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-blue-100">
-                  <tr v-for="teacher in teachers" :key="teacher.id" class="hover:bg-blue-50 transition-colors duration-200">
+                  <tr v-for="(teacher, index) in teachers" :key="teacher.id" 
+                      class="hover:bg-blue-50 transition-colors duration-200 animate-slide-in-from-left"
+                      :style="`animation-delay: ${0.7 + index * 0.1}s`">
                     <td class="px-6 py-4">
                       <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
@@ -786,8 +878,8 @@ const familyStudents = [
                     </td>
                     <td class="px-6 py-4">
                       <div class="flex gap-2">
-                        <button class="text-blue-600 hover:text-blue-700 text-sm">Ver</button>
-                        <button class="text-green-600 hover:text-green-700 text-sm">Editar</button>
+                        <button class="text-blue-600 hover:text-blue-700 text-sm hover:scale-105 transition-all duration-200">Ver</button>
+                        <button class="text-green-600 hover:text-green-700 text-sm hover:scale-105 transition-all duration-200">Editar</button>
                       </div>
                     </td>
                   </tr>
@@ -795,6 +887,7 @@ const familyStudents = [
               </table>
             </div>
           </div>
+        
 
           <!-- Modal de detalle de escuela -->
           <div v-if="selectedSchool" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -1199,20 +1292,22 @@ const familyStudents = [
           </div>
         </div>
 
-        <!-- Asistencia completa -->
-        <div v-else-if="currentView === 'attendance'" class="space-y-8">
+<!-- Asistencia completa -->
+        <div v-else-if="currentView === 'attendance'" class="space-y-8 animate-slide-in-from-right">
           <div class="backdrop-blur-xl bg-white/90 border border-blue-100 rounded-2xl overflow-hidden shadow-xl">
             <div class="p-6 border-b border-blue-200/50 bg-gradient-to-r from-white/10 to-transparent flex justify-between items-center">
               <div>
                 <h2 class="text-xl font-bold text-gray-800 flex items-center gap-3">
                   <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-                    <UserCheck class="w-4 h-4 text-white" />
+                                        <UserCheck class="w-4 h-4 text-white" />
                   </div>
                   Control de Asistencia
                 </h2>
                 <p class="text-gray-600 text-sm mt-1">Registro diario y seguimiento de asistencia estudiantil</p>
               </div>
-              <button class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2">
+              <button 
+                @click="showAttendanceForm = true"
+                class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2">
                 <Plus class="w-4 h-4" />
                 Tomar Asistencia
               </button>
@@ -1221,19 +1316,19 @@ const familyStudents = [
             <!-- Resumen de asistencia -->
             <div class="p-6 border-b border-blue-200/50 bg-gradient-to-r from-green-50 to-blue-50">
               <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="text-center">
+                <div class="text-center animate-slide-in-from-top" style="animation-delay: 0.1s">
                   <div class="text-3xl font-bold text-green-600">{{ stats.avgAttendance }}%</div>
                   <div class="text-sm text-gray-600">Asistencia Promedio</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center animate-slide-in-from-top" style="animation-delay: 0.2s">
                   <div class="text-3xl font-bold text-blue-600">{{ stats.students }}</div>
                   <div class="text-sm text-gray-600">Total Estudiantes</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center animate-slide-in-from-top" style="animation-delay: 0.3s">
                   <div class="text-3xl font-bold text-red-600">23</div>
                   <div class="text-sm text-gray-600">Ausencias Hoy</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center animate-slide-in-from-top" style="animation-delay: 0.4s">
                   <div class="text-3xl font-bold text-orange-600">5</div>
                   <div class="text-sm text-gray-600">Tardanzas</div>
                 </div>
@@ -1255,7 +1350,9 @@ const familyStudents = [
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-blue-100">
-                  <tr v-for="record in attendanceData" :key="`${record.school}-${record.date}`" class="hover:bg-blue-50 transition-colors duration-200">
+                  <tr v-for="(record, index) in attendanceData" :key="`${record.school}-${record.date}`" 
+                      class="hover:bg-blue-50 transition-colors duration-200 animate-slide-in-from-left"
+                      :style="`animation-delay: ${0.5 + index * 0.1}s`">
                     <td class="px-6 py-4 font-semibold text-gray-800">{{ record.school }}</td>
                     <td class="px-6 py-4 text-gray-600">{{ record.date }}</td>
                     <td class="px-6 py-4 text-green-600 font-bold">{{ record.present }}</td>
@@ -1269,13 +1366,14 @@ const familyStudents = [
                       </span>
                     </td>
                     <td class="px-6 py-4">
-                      <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">Ver Detalle</button>
+                      <button class="text-blue-600 hover:text-blue-700 text-sm font-medium hover:scale-105 transition-all duration-200">Ver Detalle</button>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
+        
 
           <!-- Gráfico de tendencias -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1854,5 +1952,376 @@ const familyStudents = [
         </div>
       </main>
     </div>
+  <!-- Modales de formularios -->
+    <!-- Modal Agregar Escuela -->
+    <div v-if="showAddSchoolForm" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+         @click="showAddSchoolForm = false">
+      <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-zoom-in" @click.stop>
+        <div class="p-6 border-b border-gray-200">
+          <h2 class="text-2xl font-bold text-gray-800">Agregar Nueva Escuela</h2>
+        </div>
+        
+        <form @submit.prevent="handleAddSchool" class="p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Nombre de la Escuela</label>
+              <input v-model="newSchool.name" type="text" placeholder="Ej: Escuela Rural Los Aromos" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación</label>
+              <input v-model="newSchool.location" type="text" placeholder="Ej: Temuco" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+              <input v-model="newSchool.address" type="text" placeholder="Ej: Camino Rural Km 15, Temuco" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Director</label>
+              <input v-model="newSchool.director" type="text" placeholder="Ej: María González" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Año de Fundación</label>
+              <input v-model="newSchool.founded" type="number" placeholder="Ej: 1985" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+              <input v-model="newSchool.phone" type="tel" placeholder="Ej: +56 9 8765 4321" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <input v-model="newSchool.email" type="email" placeholder="Ej: direccion@escuela.cl" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+          </div>
+          <div class="flex gap-3 pt-4">
+            <button type="submit" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl font-medium hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5">
+              Agregar Escuela
+            </button>
+            <button type="button" @click="showAddSchoolForm = false" class="border border-gray-300 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Agregar Docente -->
+    <div v-if="showAddTeacherForm" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+         @click="showAddTeacherForm = false">
+      <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-zoom-in" @click.stop>
+        <div class="p-6 border-b border-gray-200">
+          <h2 class="text-2xl font-bold text-gray-800">Agregar Nuevo Docente</h2>
+        </div>
+        
+        <form @submit.prevent="handleAddTeacher" class="p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
+              <input v-model="newTeacher.name" type="text" placeholder="Ej: Carmen Silva Rodríguez" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">RUT</label>
+              <input v-model="newTeacher.rut" type="text" placeholder="Ej: 12.345.678-9" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Escuela</label>
+              <select v-model="newTeacher.school" required
+                      class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                <option value="">Seleccionar escuela</option>
+                <option v-for="school in schools" :key="school.id" :value="school.name">{{ school.name }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Años de Experiencia</label>
+              <input v-model="newTeacher.experience" type="text" placeholder="Ej: 15 años" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+              <input v-model="newTeacher.phone" type="tel" placeholder="Ej: +56 9 8765 4321" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <input v-model="newTeacher.email" type="email" placeholder="Ej: carmen.silva@escuela.cl" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+          </div>
+          <div class="flex gap-3 pt-4">
+            <button type="submit" class="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-3 rounded-xl font-medium hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300 hover:-translate-y-0.5">
+              Agregar Docente
+            </button>
+            <button type="button" @click="showAddTeacherForm = false" class="border border-gray-300 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Crear Actividad -->
+    <div v-if="showActivityForm" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+         @click="showActivityForm = false">
+      <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-zoom-in" @click.stop>
+        <div class="p-6 border-b border-gray-200">
+          <h2 class="text-2xl font-bold text-gray-800">Nueva Actividad</h2>
+        </div>
+        
+        <form @submit.prevent="handleAddActivity" class="p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Título de la Actividad</label>
+              <input v-model="newActivity.title" type="text" placeholder="Ej: Fracciones Básicas" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Asignatura</label>
+              <select v-model="newActivity.subject" required
+                      class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Seleccionar asignatura</option>
+                <option value="mathematics">Matemáticas</option>
+                <option value="language">Lenguaje</option>
+                <option value="science">Ciencias</option>
+                <option value="history">Historia</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+              <textarea v-model="newActivity.description" placeholder="Describe la actividad y objetivos..." rows="3"
+                        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Curso</label>
+              <select v-model="newActivity.course" required
+                      class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Seleccionar curso</option>
+                <option value="4-basico">4° Básico</option>
+                <option value="5-basico">5° Básico</option>
+                <option value="6-basico">6° Básico</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Entrega</label>
+              <input v-model="newActivity.dueDate" type="date" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+          </div>
+          <div class="flex gap-3 pt-4">
+            <button type="submit" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl font-medium hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5">
+              Crear Actividad
+            </button>
+            <button type="button" @click="showActivityForm = false" class="border border-gray-300 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Tomar Asistencia -->
+    <div v-if="showAttendanceForm" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+         @click="showAttendanceForm = false">
+      <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-zoom-in" @click.stop>
+        <div class="p-6 border-b border-gray-200">
+          <h2 class="text-2xl font-bold text-gray-800">Tomar Asistencia</h2>
+        </div>
+        
+        <div class="p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Escuela</label>
+              <select v-model="attendanceForm.school" required
+                      class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                <option value="">Seleccionar escuela</option>
+                <option v-for="school in schools" :key="school.id" :value="school.name">{{ school.name }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Curso</label>
+              <select v-model="attendanceForm.course" required
+                      class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                <option value="">Seleccionar curso</option>
+                <option value="4-basico">4° Básico</option>
+                <option value="5-basico">5° Básico</option>
+                <option value="6-basico">6° Básico</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
+              <input v-model="attendanceForm.date" type="date" required
+                     class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+          </div>
+
+          <div class="border rounded-lg p-4 max-h-96 overflow-y-auto">
+            <h4 class="font-semibold mb-4">Lista de Estudiantes</h4>
+            <div class="space-y-2">
+              <div v-for="(student, index) in ['María González', 'Pedro Martínez', 'Ana Silva', 'Carlos López', 'Sofía Morales']" :key="index"
+                   class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span class="font-medium">{{ student }}</span>
+                <div class="flex gap-2">
+                  <button type="button" class="px-3 py-1 text-sm bg-green-100 text-green-700 hover:bg-green-200 rounded-lg transition-colors">
+                    Presente
+                  </button>
+                  <button type="button" class="px-3 py-1 text-sm bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors">
+                    Ausente
+                  </button>
+                  <button type="button" class="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 hover:bg-yellow-200 rounded-lg transition-colors">
+                    Tardanza
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button @click="handleTakeAttendance" class="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-3 rounded-xl font-medium hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300 hover:-translate-y-0.5">
+              Guardar Asistencia
+            </button>
+            <button @click="showAttendanceForm = false" class="border border-gray-300 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
+
+<style scoped>
+/* Animaciones personalizadas */
+@keyframes slide-in-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-from-top {
+  animation: slide-in-from-top 0.5s ease-out;
+}
+
+.animate-slide-in-from-bottom {
+  animation: slide-in-from-bottom 0.5s ease-out;
+}
+
+.animate-slide-in-from-left {
+  animation: slide-in-from-left 0.5s ease-out;
+}
+
+.animate-slide-in-from-right {
+  animation: slide-in-from-right 0.5s ease-out;
+}
+
+.animate-zoom-in {
+  animation: zoom-in 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
+/* Efectos hover */
+.hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+
+.hover\:-translate-y-0\.5:hover {
+  transform: translateY(-0.125rem);
+}
+
+.hover\:-translate-y-1:hover {
+  transform: translateY(-0.25rem);
+}
+
+.hover\:-translate-y-2:hover {
+  transform: translateY(-0.5rem);
+}
+
+/* Transiciones suaves */
+button,
+.card,
+.hover-effect {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style>
